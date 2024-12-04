@@ -105,9 +105,11 @@ def validate_solution():
 
 
 def reset_board():
-    global grid_values
+    global grid_values, sketched_values
     if sudoku_generator:
-        grid_values = original_board
+        grid_values = [row[:] for row in original_board]  # Reset to original board
+    sketched_values = [["" for _ in range(9)] for _ in range(9)]  # Clear sketched values
+
 
 
 def display_result(result):
@@ -178,6 +180,7 @@ while running:
                 elif restart_button.collidepoint(mouse_pos):
                     scene = 1  # Back to the start screen
                     grid_values = [["" for _ in range(9)] for _ in range(9)]
+                    sketched_values = [["" for _ in range(9)] for _ in range(9)]  # Clear sketched values
                     selected_cell = None
                 elif exit_button.collidepoint(mouse_pos):
                     running = False
