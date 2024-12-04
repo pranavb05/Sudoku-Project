@@ -98,8 +98,7 @@ def validate_solution():
 def reset_board():
     global grid_values
     if sudoku_generator:
-        grid_values = sudoku_generator.get_board()
-
+        grid_values = original_board
 
 def display_result(result):
     screen.fill(WHITE)
@@ -141,12 +140,12 @@ while running:
                     sudoku_generator.fill_values()
                     solution_grid = sudoku_generator.get_board()
                     sudoku_generator.remove_cells()
+                    original_board = [row[:] for row in sudoku_generator.get_board()]
                     grid_values = sudoku_generator.get_board()
 
         elif scene == 2:  # Game scene
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouse_pos = event.pos
-
                 # Check if buttons are clicked
                 if reset_button.collidepoint(mouse_pos):
                     reset_board()
