@@ -14,6 +14,8 @@ BLACK = (0, 0, 0)
 ORANGE = (255, 69, 0)
 LIGHT_BLUE = (220, 220, 255)
 GRAY = (200, 200, 200)
+BUTTON_BG = (205, 133, 63)  # Brown background
+BUTTON_TEXT = WHITE  # White text
 
 # Create screen
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
@@ -23,8 +25,8 @@ button_width, button_height = 100, 40
 button1_pos = (75, 275)
 button2_pos = (225, 275)
 button3_pos = (375, 275)
-restart_button_pos = (75, 550)
-reset_button_pos = (225, 550)
+reset_button_pos = (75, 550)
+restart_button_pos = (225, 550)
 exit_button_pos = (375, 550)
 
 # Initialize game variables
@@ -40,7 +42,7 @@ def draw_button(text, pos, color):
     x, y = pos
     button_rect = pygame.Rect(x, y, button_width, button_height)
     pygame.draw.rect(screen, color, button_rect)
-    text_surface = font.render(text, True, WHITE)
+    text_surface = font.render(text, True, BUTTON_TEXT)
     text_rect = text_surface.get_rect(center=button_rect.center)
     screen.blit(text_surface, text_rect)
     return button_rect
@@ -54,7 +56,7 @@ def draw_board():
             y = r * cellsize
             rect = pygame.Rect(x, y, cellsize, cellsize)
             pygame.draw.rect(screen, BLACK, rect, 1)  # Grid lines
-            if selected_cell == (r, c) and grid_values[r][c] == 0:
+            if selected_cell == (r, c):
                 pygame.draw.rect(screen, LIGHT_BLUE, rect)
             # Display cell values
             text = font.render(str(grid_values[r][c]) if grid_values[r][c] != 0 else "", True, BLACK)
@@ -93,8 +95,13 @@ def validate_solution():
     return True
 
 
+def reset_board():
+    global grid_values
+    if sudoku_generator:
+        grid_values = sudoku_generator.get_board()
+
+
 def display_result(result):
-    """Displays the result screen."""
     screen.fill(WHITE)
     result_text = "You Win!" if result else "You Lose!"
     text_surface = font.render(result_text, True, BLACK)
@@ -108,7 +115,6 @@ def display_result(result):
     return restart_button, exit_button
 
 
-# Main loop
 running = True
 input_text = ""
 while running:
@@ -139,8 +145,19 @@ while running:
 
         elif scene == 2:  # Game scene
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                selected_cell = get_cell(event.pos)
-                row, col = selected_cell
+                mouse_pos = event.pos
+
+                # Check if buttons are clicked
+                if reset_button.collidepoint(mouse_pos):
+                    reset_board()
+                elif restart_button.collidepoint(mouse_pos):
+                    scene = 1  # Back to the start screen
+                    grid_values = [["" for _ in range(9)] for _ in range(9)]
+                    selected_cell = None
+                elif exit_button.collidepoint(mouse_pos):
+                    running = False
+                else:
+                    selected_cell = get_cell(event.pos)
             elif event.type == pygame.KEYDOWN and selected_cell is not None:
                 row, col = selected_cell
                 if event.key == pygame.K_RETURN:
@@ -187,6 +204,11 @@ while running:
             text = font.render(input_text, True, BLACK)
             text_rect = text.get_rect(center=(x + cellsize // 2, y + cellsize // 2))
             screen.blit(text, text_rect)
+
+        # Draw Reset, Restart, and Exit buttons
+        reset_button = draw_button("RESET", reset_button_pos, BUTTON_BG)
+        restart_button = draw_button("RESTART", restart_button_pos, BUTTON_BG)
+        exit_button = draw_button("EXIT", exit_button_pos, BUTTON_BG)
 
     pygame.display.flip()
 
