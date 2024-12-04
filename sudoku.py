@@ -54,7 +54,7 @@ def draw_board():
             y = r * cellsize
             rect = pygame.Rect(x, y, cellsize, cellsize)
             pygame.draw.rect(screen, BLACK, rect, 1)  # Grid lines
-            if selected_cell == (r, c):
+            if selected_cell == (r, c) and grid_values[r][c] == 0:
                 pygame.draw.rect(screen, LIGHT_BLUE, rect)
             # Display cell values
             text = font.render(str(grid_values[r][c]) if grid_values[r][c] != 0 else "", True, BLACK)
@@ -140,6 +140,7 @@ while running:
         elif scene == 2:  # Game scene
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 selected_cell = get_cell(event.pos)
+                row, col = selected_cell
             elif event.type == pygame.KEYDOWN and selected_cell is not None:
                 row, col = selected_cell
                 if event.key == pygame.K_RETURN:
