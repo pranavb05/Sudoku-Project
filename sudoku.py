@@ -31,11 +31,13 @@ exit_button_pos = (375, 550)
 
 # Initialize game variables
 grid_values = [["" for _ in range(9)] for _ in range(9)]
+sketched_values = [["" for _ in range(9)] for _ in range(9)]
 solution_grid = None
 selected_cell = None
 scene = 1
 difficulty = 0
 sudoku_generator = None
+
 
 def draw_button(text, pos, color):
     global button_width
@@ -47,6 +49,7 @@ def draw_button(text, pos, color):
     screen.blit(text_surface, text_rect)
     return button_rect
 
+
 def draw_board():
     """Draws the Sudoku board grid and values."""
     for r in range(9):
@@ -57,10 +60,17 @@ def draw_board():
             pygame.draw.rect(screen, BLACK, rect, 1)  # Grid lines
             if selected_cell == (r, c):
                 pygame.draw.rect(screen, LIGHT_BLUE, rect)
-            # Display cell values
-            text = font.render(str(grid_values[r][c]) if grid_values[r][c] != 0 else "", True, BLACK)
-            text_rect = text.get_rect(center=(x + cellsize // 2, y + cellsize // 2))
-            screen.blit(text, text_rect)
+
+            # Display confirmed values in black
+            if grid_values[r][c] != 0:
+                text = font.render(str(grid_values[r][c]), True, BLACK)
+                text_rect = text.get_rect(center=(x + cellsize // 2, y + cellsize // 2))
+                screen.blit(text, text_rect)
+            # Display sketched values in gray
+            elif sketched_values[r][c] != "":
+                text = font.render(str(sketched_values[r][c]), True, GRAY)
+                text_rect = text.get_rect(center=(x + cellsize // 2, y + cellsize // 2))
+                screen.blit(text, text_rect)
 
 
 def get_cell(pos):
@@ -132,7 +142,6 @@ def move_selection(direction):
 
 
 running = True
-input_text = ""
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -163,8 +172,7 @@ while running:
         elif scene == 2:  # Game scene
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouse_pos = event.pos
-
-                # Check if buttons are clicked
+                selected_cell = get_cell(mouse_pos)
                 if reset_button.collidepoint(mouse_pos):
                     reset_board()
                 elif restart_button.collidepoint(mouse_pos):
@@ -175,6 +183,7 @@ while running:
                     running = False
                 else:
                     selected_cell = get_cell(event.pos)
+
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_UP:
                     move_selection("UP")
@@ -184,13 +193,16 @@ while running:
                     move_selection("LEFT")
                 elif event.key == pygame.K_RIGHT:
                     move_selection("RIGHT")
-                elif selected_cell is not None:
+                elif selected_cell is not None:  # Ensure a cell is selected
                     row, col = selected_cell
                     if event.key == pygame.K_RETURN:
+                        # Commit the sketched value to the grid
                         try:
-                            input_value = int(input_text)
-                            if 1 <= input_value <= 9 and grid_values[row][col] == 0:  # Restrict input to 1-9
+                            input_value = int(sketched_values[row][col])
+                            if 1 <= input_value <= 9 and grid_values[row][col] == 0:
                                 grid_values[row][col] = input_value
+                                sketched_values[row][col] = ""
+
                             input_text = ""
                             # Check if the game is complete
                             if all(all(cell != 0 for cell in row) for row in grid_values):
@@ -200,12 +212,19 @@ while running:
                                 else:
                                     scene = 3  # Lose scene
                                     result = False
+                            # Clear the sketch
                         except ValueError:
                             pass
                     elif event.key == pygame.K_BACKSPACE:
-                        input_text = input_text[:-1]
+                        sketched_values[row][col] = ""  # Clear sketch in the cell
                     else:
-                        input_text += event.unicode
+                        try:
+                            # Sketch the value in gray if the cell is empty
+                            input_value = int(event.unicode)
+                            if 1 <= input_value <= 9 and grid_values[row][col] == 0:
+                                sketched_values[row][col] = input_value
+                        except ValueError:
+                            pass
 
         elif scene == 3:  # Result scene
             restart_button, exit_button = display_result(result)
@@ -213,6 +232,7 @@ while running:
                 if restart_button.collidepoint(event.pos):
                     scene = 1
                     grid_values = [["" for _ in range(9)] for _ in range(9)]
+                    sketched_values = [["" for _ in range(9)] for _ in range(9)]
                     selected_cell = None
                 elif exit_button.collidepoint(event.pos):
                     running = False
@@ -225,16 +245,6 @@ while running:
     elif scene == 2:
         screen.fill(WHITE)
         draw_board()
-        if selected_cell is not None:
-            x, y = selected_cell[1] * cellsize, selected_cell[0] * cellsize
-            row, col = selected_cell
-            if grid_values[row][col] == 0:
-                text = font.render(input_text, True, BLACK)
-                text_rect = text.get_rect(center=(x + cellsize // 2, y + cellsize // 2))
-                screen.blit(text, text_rect)
-            else:
-                input_text = ""
-
         # Draw Reset, Restart, and Exit buttons
         reset_button = draw_button("RESET", reset_button_pos, ORANGE)
         restart_button = draw_button("RESTART", restart_button_pos, ORANGE)
