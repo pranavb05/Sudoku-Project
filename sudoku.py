@@ -163,7 +163,7 @@ while running:
                 if event.key == pygame.K_RETURN:
                     try:
                         input_value = int(input_text)
-                        if 1 <= input_value <= 9:  # Restrict input to 1-9
+                        if 1 <= input_value <= 9 and grid_values[row][col] == 0:  # Restrict input to 1-9
                             grid_values[row][col] = input_value
                         input_text = ""
                         # Check if the game is complete
@@ -201,9 +201,13 @@ while running:
         draw_board()
         if selected_cell is not None:
             x, y = selected_cell[1] * cellsize, selected_cell[0] * cellsize
-            text = font.render(input_text, True, BLACK)
-            text_rect = text.get_rect(center=(x + cellsize // 2, y + cellsize // 2))
-            screen.blit(text, text_rect)
+            row, col = selected_cell
+            if grid_values[row][col] == 0:
+                text = font.render(input_text, True, BLACK)
+                text_rect = text.get_rect(center=(x + cellsize // 2, y + cellsize // 2))
+                screen.blit(text, text_rect)
+            else:
+                input_text = ""
 
         # Draw Reset, Restart, and Exit buttons
         reset_button = draw_button("RESET", reset_button_pos, BUTTON_BG)
