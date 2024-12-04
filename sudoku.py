@@ -21,7 +21,7 @@ BUTTON_TEXT = WHITE  # White text
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
 pygame.display.set_caption("Sudoku")
 font = pygame.font.Font(None, 36)
-button_width, button_height = 100, 40
+button_width, button_height = 125, 40
 button1_pos = (75, 275)
 button2_pos = (225, 275)
 button3_pos = (375, 275)
@@ -37,8 +37,8 @@ scene = 1
 difficulty = 0
 sudoku_generator = None
 
-
 def draw_button(text, pos, color):
+    global button_width
     x, y = pos
     button_rect = pygame.Rect(x, y, button_width, button_height)
     pygame.draw.rect(screen, color, button_rect)
@@ -46,7 +46,6 @@ def draw_button(text, pos, color):
     text_rect = text_surface.get_rect(center=button_rect.center)
     screen.blit(text_surface, text_rect)
     return button_rect
-
 
 def draw_board():
     """Draws the Sudoku board grid and values."""
@@ -237,9 +236,9 @@ while running:
                 input_text = ""
 
         # Draw Reset, Restart, and Exit buttons
-        reset_button = draw_button("RESET", reset_button_pos, BUTTON_BG)
-        restart_button = draw_button("RESTART", restart_button_pos, BUTTON_BG)
-        exit_button = draw_button("EXIT", exit_button_pos, BUTTON_BG)
+        reset_button = draw_button("RESET", reset_button_pos, ORANGE)
+        restart_button = draw_button("RESTART", restart_button_pos, ORANGE)
+        exit_button = draw_button("EXIT", exit_button_pos, ORANGE)
 
     pygame.display.flip()
 
