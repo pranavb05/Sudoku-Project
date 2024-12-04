@@ -100,6 +100,7 @@ def reset_board():
     if sudoku_generator:
         grid_values = original_board
 
+
 def display_result(result):
     screen.fill(WHITE)
     result_text = "You Win!" if result else "You Lose!"
@@ -112,6 +113,23 @@ def display_result(result):
     pygame.display.flip()
 
     return restart_button, exit_button
+
+
+def move_selection(direction):
+    """Moves the selected cell based on the arrow key input."""
+    global selected_cell
+    if selected_cell is None:
+        selected_cell = (0, 0)
+    row, col = selected_cell
+    if direction == "UP" and row > 0:
+        row -= 1
+    elif direction == "DOWN" and row < 8:
+        row += 1
+    elif direction == "LEFT" and col > 0:
+        col -= 1
+    elif direction == "RIGHT" and col < 8:
+        col += 1
+    selected_cell = (row, col)
 
 
 running = True
@@ -146,6 +164,7 @@ while running:
         elif scene == 2:  # Game scene
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 mouse_pos = event.pos
+
                 # Check if buttons are clicked
                 if reset_button.collidepoint(mouse_pos):
                     reset_board()
@@ -157,28 +176,37 @@ while running:
                     running = False
                 else:
                     selected_cell = get_cell(event.pos)
-            elif event.type == pygame.KEYDOWN and selected_cell is not None:
-                row, col = selected_cell
-                if event.key == pygame.K_RETURN:
-                    try:
-                        input_value = int(input_text)
-                        if 1 <= input_value <= 9 and grid_values[row][col] == 0:  # Restrict input to 1-9
-                            grid_values[row][col] = input_value
-                        input_text = ""
-                        # Check if the game is complete
-                        if all(all(cell != 0 for cell in row) for row in grid_values):
-                            if validate_solution():
-                                scene = 3  # Win scene
-                                result = True
-                            else:
-                                scene = 3  # Lose scene
-                                result = False
-                    except ValueError:
-                        pass
-                elif event.key == pygame.K_BACKSPACE:
-                    input_text = input_text[:-1]
-                else:
-                    input_text += event.unicode
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    move_selection("UP")
+                elif event.key == pygame.K_DOWN:
+                    move_selection("DOWN")
+                elif event.key == pygame.K_LEFT:
+                    move_selection("LEFT")
+                elif event.key == pygame.K_RIGHT:
+                    move_selection("RIGHT")
+                elif selected_cell is not None:
+                    row, col = selected_cell
+                    if event.key == pygame.K_RETURN:
+                        try:
+                            input_value = int(input_text)
+                            if 1 <= input_value <= 9 and grid_values[row][col] == 0:  # Restrict input to 1-9
+                                grid_values[row][col] = input_value
+                            input_text = ""
+                            # Check if the game is complete
+                            if all(all(cell != 0 for cell in row) for row in grid_values):
+                                if validate_solution():
+                                    scene = 3  # Win scene
+                                    result = True
+                                else:
+                                    scene = 3  # Lose scene
+                                    result = False
+                        except ValueError:
+                            pass
+                    elif event.key == pygame.K_BACKSPACE:
+                        input_text = input_text[:-1]
+                    else:
+                        input_text += event.unicode
 
         elif scene == 3:  # Result scene
             restart_button, exit_button = display_result(result)
